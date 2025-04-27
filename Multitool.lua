@@ -132,31 +132,28 @@ UserInputService.InputBegan:Connect(function(input)
     end
 end)
 
--- Add draggable functionality to the chat bypass frame
+-- Make the Chat Bypass GUI movable
 local dragging = false
 local dragInput, dragStart, startPos
-
-local function updatePosition(input)
-    local delta = input.Position - dragStart
-    chatFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
 
 chatFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
         startPos = chatFrame.Position
-        input.Changed:Connect(function()
-            if not input.UserInputState == Enum.UserInputState.Change then
-                dragging = false
-            end
-        end)
     end
 end)
 
 chatFrame.InputChanged:Connect(function(input)
     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        updatePosition(input)
+        local delta = input.Position - dragStart
+        chatFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+chatFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
     end
 end)
 
@@ -165,12 +162,22 @@ ChatSection:NewButton("Activate Chat Bypass", "Open the chat bypass GUI", functi
     chatFrame.Visible = true
 end)
 
--- Therapy Tab
-local TherapyTab = Window:NewTab("Therapy")
-local TherapySection = TherapyTab:NewSection("Therapy Tools")
+-- Random Tab (formerly Therapy)
+local RandomTab = Window:NewTab("Random")
+local RandomSection = RandomTab:NewSection("Random Tools")
+
+-- Button to Play Goofy Animation
+RandomSection:NewButton("Goofy Animation", "Plays a goofy animation", function()
+    local humanoid = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        local animation = Instance.new("Animation")
+        animation.AnimationId = "rbxassetid://18858673531"
+        humanoid:LoadAnimation(animation):Play()
+    end
+end)
 
 -- Button to Find Player's Name and make AdminGui Visible
-TherapySection:NewButton("Make AdminGui Visible", "Find Player's Name and Make AdminGui Visible", function()
+RandomSection:NewButton("Make AdminGui Visible", "Find Player's Name and Make AdminGui Visible", function()
     local playerName = game.Players.LocalPlayer.Name
     local adminGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("AdminGui")
     if adminGui then
@@ -182,7 +189,7 @@ TherapySection:NewButton("Make AdminGui Visible", "Find Player's Name and Make A
 end)
 
 -- Button to Steal All Items (except from players' backpacks)
-TherapySection:NewButton("Steal All Items in Game", "Get all items in the game", function()
+RandomSection:NewButton("Steal All Items in Game", "Get all items in the game", function()
     for _, obj in pairs(game:GetDescendants()) do
         -- Exclude players' backpacks
         if obj:IsA("BasePart") and not obj:IsDescendantOf(game.Players.LocalPlayer.Backpack) then
