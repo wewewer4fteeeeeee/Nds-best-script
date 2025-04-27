@@ -1,3 +1,102 @@
+-- Load Kavo UI Library and setup the Window
+local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = KavoUI.CreateLib("Natural Disaster Survival | Made By Exploding Car", "Midnight")
+
+-- NDS Tab Setup
+local NDS = Window:NewTab("NDS")
+local NDSSection = NDS:NewSection("Natural Disaster Survival")
+
+-- Start Random Disaster Button
+NDSSection:NewButton("Start Disaster", "Start a random disaster", function()
+    game.ReplicatedStorage:WaitForChild("StartRandomDisaster"):FireServer()  -- Fire the event to trigger a random disaster
+end)
+
+-- Add your NDS features like Steal Balloon, Apple Animation, etc.
+NDSSection:NewButton("Steal Balloon", "Steals all balloons in player's backpack", function()
+    -- Logic to steal green balloons from player backpacks
+end)
+
+-- Apple Animation Button
+NDSSection:NewButton("Apple Animation", "Plays the Apple Eating Animation", function()
+    local character = game.Players.LocalPlayer.Character
+    if character then
+        -- Check if the character is using R6 or R15
+        if character:FindFirstChild("Right Arm") then
+            -- R6 Character
+            local appleAnim = game.ReplicatedStorage:WaitForChild("AppleEatAnimR6")  -- AppleEatAnimR6 is in ReplicatedStorage
+            if appleAnim then
+                appleAnim:Play()  -- Play the R6 animation
+            end
+        elseif character:FindFirstChild("RightLowerLeg") then
+            -- R15 Character
+            local appleAnim = game.ReplicatedStorage:WaitForChild("AppleEatAnimR15")  -- AppleEatAnimR15 is in ReplicatedStorage
+            if appleAnim then
+                appleAnim:Play()  -- Play the R15 animation
+            end
+        else
+            print("Character is neither R6 nor R15, unable to play animation.")
+        end
+    end
+end)
+
+-- Tornado Tab Setup (Tornado Customization)
+local Tornado = Window:NewTab("Tornado")
+local TornadoSection = Tornado:NewSection("Tornado Settings")
+
+-- Spin Speed Slider
+TornadoSection:NewSlider("Spin Speed", "Controls the tornado's spin speed", 0, 100, 50, function(value)
+    -- Adjust tornado spin speed here (0-100 range)
+    print("Spin Speed Set to: " .. value)
+end)
+
+-- Width Slider
+TornadoSection:NewSlider("Tornado Width", "Adjust the tornado's width", 0, 100, 50, function(value)
+    -- Adjust tornado width here (0-100 range)
+    print("Tornado Width Set to: " .. value)
+end)
+
+-- Height Slider
+TornadoSection:NewSlider("Tornado Height", "Adjust the tornado's height", 0, 100, 50, function(value)
+    -- Adjust tornado height here (0-100 range)
+    print("Tornado Height Set to: " .. value)
+end)
+
+-- Fun Tab Setup (FE and Crazy Fun Stuff)
+local Fun = Window:NewTab("Fun")
+local FunSection = Fun:NewSection("FE and Fun Stuff")
+
+-- FE R6 Emotes Button
+FunSection:NewButton("FE R6 Emotes", "Triggers wacky R6 Emotes", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/WinterDinder/oldfehub/main/boronide%20level%20obfuscation%20lol"))()
+end)
+
+-- FE Spin Button (Example FE Function)
+FunSection:NewButton("FE Spin", "Triggers a crazy spin animation", function()
+    local character = game.Players.LocalPlayer.Character
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.WalkSpeed = 0
+        while true do
+            humanoid.RootPart.CFrame = humanoid.RootPart.CFrame * CFrame.Angles(0, math.rad(15), 0)
+            wait(0.1)
+        end
+    end
+end)
+
+-- Add More FE Buttons (Head Stretch, Crazy Arms, etc.)
+FunSection:NewButton("FE Head Stretch", "Stretches the character's head", function()
+    local character = game.Players.LocalPlayer.Character
+    if character then
+        local head = character:FindFirstChild("Head")
+        if head then
+            head.Size = Vector3.new(10, 10, 10)
+        end
+    end
+end)
+
+-- Optional: Add more FE stuff and wacky features!
+
+-- End of UI Setup
 -- Final Script for NDS UI made by Exploding Car
 -- Using Kavo UI Library with Dark Purple Theme and Smooth Animations
 
