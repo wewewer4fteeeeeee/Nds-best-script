@@ -123,7 +123,73 @@ end)
 -- Initially hide the chat bypass GUI (it will only show when the button is clicked)
 chatFrame.Visible = false
 
--- Open/Close the Chat Bypass GUI when the Chat Bypass tab button is clicked
+-- Open/Close the Chat Bypass GUI when "K" key is pressed
+local UserInputService = game:GetService("UserInputService")
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.K then
+        isOpen = not isOpen
+        chatFrame.Visible = isOpen
+    end
+end)
+
+-- Add draggable functionality to the chat bypass frame
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function updatePosition(input)
+    local delta = input.Position - dragStart
+    chatFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+chatFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = chatFrame.Position
+        input.Changed:Connect(function()
+            if not input.UserInputState == Enum.UserInputState.Change then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+chatFrame.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        updatePosition(input)
+    end
+end)
+
+-- Open the Chat Bypass GUI when the Chat Bypass tab button is clicked
 ChatSection:NewButton("Activate Chat Bypass", "Open the chat bypass GUI", function()
     chatFrame.Visible = true
 end)
+
+-- Therapy Tab
+local TherapyTab = Window:NewTab("Therapy")
+local TherapySection = TherapyTab:NewSection("Therapy Tools")
+
+-- Button to Find Player's Name and make AdminGui Visible
+TherapySection:NewButton("Make AdminGui Visible", "Find Player's Name and Make AdminGui Visible", function()
+    local playerName = game.Players.LocalPlayer.Name
+    local adminGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("AdminGui")
+    if adminGui then
+        adminGui.Visible = true
+        print("AdminGui made visible for player: " .. playerName)
+    else
+        print("AdminGui not found in PlayerGui.")
+    end
+end)
+
+-- Button to Steal All Items (except from players' backpacks)
+TherapySection:NewButton("Steal All Items in Game", "Get all items in the game", function()
+    for _, obj in pairs(game:GetDescendants()) do
+        -- Exclude players' backpacks
+        if obj:IsA("BasePart") and not obj:IsDescendantOf(game.Players.LocalPlayer.Backpack) then
+            local clone = obj:Clone()
+            clone.Parent = game.Players.LocalPlayer.Backpack
+        end
+    end
+end)
+
+-- Make sure the buttons work correctly.
