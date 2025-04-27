@@ -1,8 +1,8 @@
--- // Load Kavo UI
+loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = KavoUI.CreateLib("NDS Script | Made by Exploding Car 🚗🔥", "DarkTheme")
+local Window = KavoUI.CreateLib("NDS Script | Made by Exploding Car", "DarkTheme")
 
--- // Variables
+-- Variables
 local player = game.Players.LocalPlayer
 local mouse = player:GetMouse()
 
@@ -13,12 +13,12 @@ local tornadoHeight = 40
 local tornadoPattern = "Normal"
 local frozenParts = {}
 
--- // Sound
+-- Sound
 local popSound = Instance.new("Sound", player.PlayerGui)
-popSound.SoundId = "rbxassetid://7413328055" -- pop sound
+popSound.SoundId = "rbxassetid://7413328055"
 popSound.Volume = 1
 
--- // Notification Function
+-- Notification
 local function Notify(text)
     game.StarterGui:SetCore("SendNotification", {
         Title = "NDS Script",
@@ -28,7 +28,7 @@ local function Notify(text)
     popSound:Play()
 end
 
--- // Tornado Logic
+-- Tornado Logic
 game:GetService("RunService").Heartbeat:Connect(function()
     if tornadoEnabled then
         local t = tick()
@@ -65,7 +65,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
     end
 end)
 
--- // Functions
+-- Functions
 local function StartTornado()
     frozenParts = {}
     for _, part in pairs(workspace:GetDescendants()) do
@@ -90,7 +90,7 @@ local function StopTornado()
     Notify("Tornado stopped 🛑")
 end
 
--- // UI Tabs
+-- UI Tabs
 local TornadoTab = Window:NewTab("Tornado 🌪️")
 local TornadoSection = TornadoTab:NewSection("Control")
 
