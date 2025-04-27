@@ -1,202 +1,127 @@
 local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 local Window = KavoUI.CreateLib("Multitool | Made By Exploding Car", "DarkTheme")
 
-local Tab = Window:NewTab("Tools")
-local Section = Tab:NewSection("Hinge Tools")
+-- Tabs and Sections Setup
+local Tab = Window:NewTab("Random")
+local Section = Tab:NewSection("Goofy Stuff")
 
---// Function to Make a Tool
-local function makeTool(name, onActivate)
-    local tool = Instance.new("Tool")
-    tool.Name = name
-    tool.RequiresHandle = false
-    tool.Activated:Connect(onActivate)
-    tool.Parent = game.Players.LocalPlayer.Backpack
-end
+-- Enter Player's Name and Play Animation + Give Tool
+Section:NewTextBox("Enter Player's Name", "Type the player's name to give them the 'ykyk hawk tuah' and play animation", function(playerName)
+    local player = game.Players:FindFirstChild(playerName)
+    
+    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+        local humanoid = player.Character.Humanoid
+        local character = player.Character
 
---// Button 1: Break Hinges Tool
-Section:NewButton("Get Break Hinges Tool", "Destroys all hinges", function()
-    makeTool("Break Hinges", function()
-        for _, obj in pairs(game:GetDescendants()) do
-            if obj:IsA("HingeConstraint") then
-                obj:Destroy()
-            end
-        end
-    end)
+        -- Play animation on the player (looping the start of the animation)
+        local anim = Instance.new("Animation")
+        anim.AnimationId = "rbxassetid://18858673531"
+        local animTrack = humanoid:LoadAnimation(anim)
+        animTrack:Play()
+        animTrack:AdjustSpeed(1) -- Adjust the speed if necessary
+
+        -- Give the player the "ykyk hawk tuah" (tool)
+        local tool = Instance.new("Tool")
+        tool.Name = "ykyk hawk tuah"
+        tool.Parent = player.Backpack
+        
+        -- Optionally, position the tool near the character's position in a humorous way
+        local handle = Instance.new("Part")
+        handle.Size = Vector3.new(1, 1, 1)
+        handle.Position = character.HumanoidRootPart.Position + Vector3.new(0, 5, 0) -- Above the player
+        handle.Anchored = true
+        handle.Parent = game.Workspace
+        
+        -- After a short delay, position the tool at a comical place
+        wait(0.5)
+        handle.Position = character.HumanoidRootPart.Position + Vector3.new(0, -1, 0) -- Modify for humor
+    else
+        print("Player not found or invalid character.")
+    end
 end)
 
---// Button 2: Spin Hinges Tool
-Section:NewButton("Get Spin Hinges Tool", "Spins all hinges crazy fast", function()
-    makeTool("Spin Hinges", function()
-        for _, obj in pairs(game:GetDescendants()) do
-            if obj:IsA("HingeConstraint") then
-                obj.AngularVelocity = 10000
-                obj.MotorMaxTorque = math.huge
-            end
-        end
-    end)
-end)
-
---// Button 3: Fling Hinges Tool
-Section:NewButton("Get Fling Hinges Tool", "Flings parts with hinges", function()
-    makeTool("Fling Hinges", function()
-        for _, obj in pairs(game:GetDescendants()) do
-            if obj:IsA("HingeConstraint") then
-                local att0 = obj.Attachment0
-                if att0 and att0.Parent and att0.Parent:IsA("BasePart") then
-                    att0.Parent.Velocity = Vector3.new(
-                        math.random(-500, 500),
-                        math.random(500, 1000),
-                        math.random(-500, 500)
-                    )
-                end
-            end
-        end
-    end)
-end)
-
--- Chat Bypass Tab
+-- Chat Bypass Section Setup
 local ChatTab = Window:NewTab("Chat Bypass")
 local ChatSection = ChatTab:NewSection("Chat Bypass")
 
--- Create the Chat Bypass GUI
-local chatGUI = Instance.new("ScreenGui")
-chatGUI.Parent = game.Players.LocalPlayer.PlayerGui
-
+-- Chat Bypass GUI
+local chatBypassOpen = false
 local chatFrame = Instance.new("Frame")
-chatFrame.Parent = chatGUI
-chatFrame.Size = UDim2.new(0, 300, 0, 150)
-chatFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+chatFrame.Size = UDim2.new(0, 300, 0, 200)
+chatFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
 chatFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-chatFrame.BorderSizePixel = 2
-chatFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+chatFrame.BackgroundTransparency = 0.5
+chatFrame.Visible = false
+chatFrame.Parent = game.Players.LocalPlayer.PlayerGui
 
-local inputBox = Instance.new("TextBox")
-inputBox.Parent = chatFrame
-inputBox.Size = UDim2.new(1, -20, 0, 40)
-inputBox.Position = UDim2.new(0, 10, 0, 10)
-inputBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-inputBox.BorderSizePixel = 1
-inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-inputBox.PlaceholderText = "Type your message here..."
-inputBox.ClearTextOnFocus = false
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0, 280, 0, 40)
+textBox.Position = UDim2.new(0, 10, 0, 10)
+textBox.Text = ""
+textBox.PlaceholderText = "Type your message..."
+textBox.Parent = chatFrame
 
 local sendButton = Instance.new("TextButton")
-sendButton.Parent = chatFrame
-sendButton.Size = UDim2.new(0, 100, 0, 40)
-sendButton.Position = UDim2.new(0, 10, 1, -50)
-sendButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-sendButton.BorderSizePixel = 1
-sendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+sendButton.Size = UDim2.new(0, 280, 0, 40)
+sendButton.Position = UDim2.new(0, 10, 0, 60)
 sendButton.Text = "Send Message"
+sendButton.Parent = chatFrame
 
--- Function to send message
 sendButton.MouseButton1Click:Connect(function()
-    local message = inputBox.Text
-    if message ~= "" then
-        -- Convert message to bypassed format (e.g., "s.ͥ.g.ͫ..ͣ.")
-        local convertedMessage = ""
-        for i = 1, #message do
-            local char = message:sub(i, i)
-            convertedMessage = convertedMessage .. char .. string.char(math.random(32, 126)) -- Add random characters in between
-        end
-        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(convertedMessage, "All")
-    end
+    local originalMessage = textBox.Text
+    local modifiedMessage = string.gsub(originalMessage, ".", function(c)
+        return c.."ͥ"  -- Adds the "ͥ" after each character
+    end)
+    game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(modifiedMessage, "All")
 end)
 
--- Create the Open/Close Button for Chat Bypass
+-- Open/Close Button for Chat Bypass GUI
 local openCloseButton = Instance.new("TextButton")
-openCloseButton.Parent = chatGUI
-openCloseButton.Size = UDim2.new(0, 100, 0, 30)
-openCloseButton.Position = UDim2.new(0, 10, 0, 50)  -- Move the button lower to avoid chatbox overlap
-openCloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-openCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-openCloseButton.Text = "Open/Close"
-openCloseButton.TextSize = 14
+openCloseButton.Size = UDim2.new(0, 100, 0, 40)
+openCloseButton.Position = UDim2.new(0, 10, 0, 250)  -- Adjusted position so it's not in the chat's way
+openCloseButton.Text = "Open Chat Bypass"
+openCloseButton.Parent = game.Players.LocalPlayer.PlayerGui
 
--- Function to toggle the chat bypass GUI visibility
-local isOpen = false
 openCloseButton.MouseButton1Click:Connect(function()
-    isOpen = not isOpen
-    chatFrame.Visible = isOpen
+    chatBypassOpen = not chatBypassOpen
+    chatFrame.Visible = chatBypassOpen
+    openCloseButton.Text = chatBypassOpen and "Close Chat Bypass" or "Open Chat Bypass"
 end)
 
--- Initially hide the chat bypass GUI (it will only show when the button is clicked)
-chatFrame.Visible = false
-
--- Open/Close the Chat Bypass GUI when "K" key is pressed
-local UserInputService = game:GetService("UserInputService")
-UserInputService.InputBegan:Connect(function(input)
+-- Bind the toggling of the GUI to the 'K' key
+game:GetService("UserInputService").InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.K then
-        isOpen = not isOpen
-        chatFrame.Visible = isOpen
+        chatBypassOpen = not chatBypassOpen
+        chatFrame.Visible = chatBypassOpen
+        openCloseButton.Text = chatBypassOpen and "Close Chat Bypass" or "Open Chat Bypass"
     end
 end)
 
--- Make the Chat Bypass GUI movable
-local dragging = false
-local dragInput, dragStart, startPos
-
-chatFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = chatFrame.Position
-    end
-end)
-
-chatFrame.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        chatFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-chatFrame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
--- Open the Chat Bypass GUI when the Chat Bypass tab button is clicked
-ChatSection:NewButton("Activate Chat Bypass", "Open the chat bypass GUI", function()
-    chatFrame.Visible = true
-end)
-
--- Random Tab (formerly Therapy)
+-- Admin-related Random Tab Section
 local RandomTab = Window:NewTab("Random")
-local RandomSection = RandomTab:NewSection("Random Tools")
+local RandomSection = RandomTab:NewSection("Goofy Stuff")
 
--- Button to Play Goofy Animation
-RandomSection:NewButton("Goofy Animation", "Plays a goofy animation", function()
-    local humanoid = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-    if humanoid then
-        local animation = Instance.new("Animation")
-        animation.AnimationId = "rbxassetid://18858673531"
-        humanoid:LoadAnimation(animation):Play()
-    end
-end)
-
--- Button to Find Player's Name and make AdminGui Visible
-RandomSection:NewButton("Make AdminGui Visible", "Find Player's Name and Make AdminGui Visible", function()
-    local playerName = game.Players.LocalPlayer.Name
-    local adminGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("AdminGui")
-    if adminGui then
-        adminGui.Visible = true
-        print("AdminGui made visible for player: " .. playerName)
+-- Button to loop animation on a target player
+RandomSection:NewButton("Goofy Animation", "Plays a funny animation on the target player", function()
+    local playerName = "TargetPlayerNameHere"  -- You can modify this with an actual player name or another method to get player input
+    local player = game.Players:FindFirstChild(playerName)
+    
+    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+        local humanoid = player.Character.Humanoid
+        local character = player.Character
+        
+        local anim = Instance.new("Animation")
+        anim.AnimationId = "rbxassetid://18858673531"
+        local animTrack = humanoid:LoadAnimation(anim)
+        animTrack:Play()
+        animTrack.Looped = true
+        
+        -- Place the tool or effect in the target location (like a funny position)
+        local tool = Instance.new("Tool")
+        tool.Name = "ykyk hawk tuah"
+        tool.Parent = player.Backpack
+        -- Add extra funny positioning or effects as needed
     else
-        print("AdminGui not found in PlayerGui.")
+        print("Player not found or invalid character.")
     end
 end)
-
--- Button to Steal All Items (except from players' backpacks)
-RandomSection:NewButton("Steal All Items in Game", "Get all items in the game", function()
-    for _, obj in pairs(game:GetDescendants()) do
-        -- Exclude players' backpacks
-        if obj:IsA("BasePart") and not obj:IsDescendantOf(game.Players.LocalPlayer.Backpack) then
-            local clone = obj:Clone()
-            clone.Parent = game.Players.LocalPlayer.Backpack
-        end
-    end
-end)
-
--- Make sure the buttons work correctly.
