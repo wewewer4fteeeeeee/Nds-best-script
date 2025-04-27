@@ -1,133 +1,148 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+-- Load Kavo UI
 local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = KavoUI.CreateLib("NDS Script | Made by Exploding Car", "DarkTheme")
 
--- Variables
-local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
+-- Loading Message
+print("Loading ExplodingCar's Script...")
 
-local tornadoEnabled = false
-local tornadoSpeed = 10
-local tornadoWidth = 10
-local tornadoHeight = 40
-local tornadoPattern = "Normal"
-local frozenParts = {}
+-- Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local mouse = LocalPlayer:GetMouse()
 
--- Sound
-local popSound = Instance.new("Sound", player.PlayerGui)
-popSound.SoundId = "rbxassetid://7413328055"
+-- Sound Setup
+local popSound = Instance.new("Sound")
+popSound.SoundId = "rbxassetid://7415640695" -- Glass breaking sound
 popSound.Volume = 1
+popSound.Parent = game.SoundService
 
--- Notification
-local function Notify(text)
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "NDS Script",
-        Text = text,
-        Duration = 5
-    })
+-- UI Setup
+local Window = KavoUI.CreateLib("Natural Disaster Survival | ExplodingCar", "DarkTheme")
+
+-- NDS Tab
+local NDSTab = Window:NewTab("NDS")
+local NDSSection = NDSTab:NewSection("Tools")
+
+NDSSection:NewButton("Steal Balloon", "Steals a balloon", function()
+    local targetPlayer = Players:FindFirstChild("TargetPlayerName") -- change to your target
+    if targetPlayer and targetPlayer.Backpack:FindFirstChild("GreenBalloon") then
+        local balloonCopy = targetPlayer.Backpack.GreenBalloon:Clone()
+        balloonCopy.Parent = LocalPlayer.Backpack
+    end
+end)
+
+NDSSection:NewButton("Play Balloon Anim", "Float Animation", function()
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        local anim = game.ReplicatedStorage:WaitForChild("BalloonFloatAnimationR15")
+        humanoid:LoadAnimation(anim):Play()
+    end
+end)
+
+NDSSection:NewButton("Play Apple Eating Anim", "Eat Apple Animation", function()
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        local anim = game.ReplicatedStorage:WaitForChild("AppleEatAnimR15")
+        humanoid:LoadAnimation(anim):Play()
+    end
+end)
+
+NDSSection:NewButton("Fling Unanchored", "Fling loose parts", function()
+    for _, part in pairs(workspace:GetDescendants()) do
+        if part:IsA("BasePart") and not part.Anchored then
+            local bv = Instance.new("BodyVelocity")
+            bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+            bv.Velocity = Vector3.new(math.random(-5000,5000), math.random(1000,5000), math.random(-5000,5000))
+            bv.Parent = part
+            game.Debris:AddItem(bv, 0.5)
+        end
+    end
+end)
+
+NDSSection:NewButton("Fling Tool", "Spawn a Fling Tool", function()
+    local tool = Instance.new("Tool")
+    tool.RequiresHandle = false
+    tool.Name = "Fling Tool"
+    tool.Parent = LocalPlayer.Backpack
+    tool.Activated:Connect(function()
+        local obj = mouse.Target
+        if obj and obj:IsA("BasePart") then
+            local bv = Instance.new("BodyVelocity")
+            bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+            bv.Velocity = Vector3.new(math.random(-5000,5000), math.random(1000,5000), math.random(-5000,5000))
+            bv.Parent = obj
+            game.Debris:AddItem(bv, 0.5)
+        end
+    end)
+end)
+
+-- Tornado Tab
+local TornadoTab = Window:NewTab("Tornado")
+local TornadoSection = TornadoTab:NewSection("Tornado Settings")
+
+-- Tornado Variables
+local tornadoActive = false
+local tornadoHeight = 40
+local tornadoSpeed = 2
+local tornadoWidth = 10
+local tornadoPattern = "Default"
+
+-- Sliders
+TornadoSection:NewSlider("Height", "Height above head", 100, 40, function(val)
+    tornadoHeight = val
+end)
+
+TornadoSection:NewSlider("Speed", "Spin speed", 10, 2, function(val)
+    tornadoSpeed = val
+end)
+
+TornadoSection:NewSlider("Width", "How wide", 50, 10, function(val)
+    tornadoWidth = val
+end)
+
+-- Pattern Buttons
+TornadoSection:NewButton("Pattern: Tight Spin", "Small tight tornado", function()
+    tornadoPattern = "Tight"
     popSound:Play()
-end
+    game.StarterGui:SetCore("SendNotification", {Title = "Hello Monke", Text = "Pattern Set: Tight", Duration = 2})
+end)
 
--- Tornado Logic
-game:GetService("RunService").Heartbeat:Connect(function()
-    if tornadoEnabled then
-        local t = tick()
-        for _, part in pairs(frozenParts) do
-            if part and part.Parent then
-                local angle = t * tornadoSpeed
-                local offsetX, offsetZ
+TornadoSection:NewButton("Pattern: Wide Spin", "Wide tornado", function()
+    tornadoPattern = "Wide"
+    popSound:Play()
+    game.StarterGui:SetCore("SendNotification", {Title = "Hello Monke", Text = "Pattern Set: Wide", Duration = 2})
+end)
 
-                if tornadoPattern == "Normal" then
-                    offsetX = math.cos(angle) * tornadoWidth
-                    offsetZ = math.sin(angle) * tornadoWidth
-                elseif tornadoPattern == "Reverse" then
-                    offsetX = math.cos(-angle) * tornadoWidth
-                    offsetZ = math.sin(-angle) * tornadoWidth
-                elseif tornadoPattern == "Spiral Up" then
-                    offsetX = math.cos(angle) * tornadoWidth
-                    offsetZ = math.sin(angle) * tornadoWidth
-                    tornadoHeight = tornadoHeight + 0.05
-                elseif tornadoPattern == "Spiral Down" then
-                    offsetX = math.cos(angle) * tornadoWidth
-                    offsetZ = math.sin(angle) * tornadoWidth
-                    tornadoHeight = tornadoHeight - 0.05
-                elseif tornadoPattern == "Chaos" then
-                    offsetX = math.random(-tornadoWidth, tornadoWidth)
-                    offsetZ = math.random(-tornadoWidth, tornadoWidth)
-                end
+TornadoSection:NewButton("Pattern: Chaos Spin", "Crazy random tornado", function()
+    tornadoPattern = "Chaos"
+    popSound:Play()
+    game.StarterGui:SetCore("SendNotification", {Title = "Hello Monke", Text = "Pattern Set: Chaos", Duration = 2})
+end)
 
-                local newPos = player.Character.HumanoidRootPart.Position + Vector3.new(offsetX, tornadoHeight, offsetZ)
-                if part:FindFirstChild("BodyPosition") then
-                    part.BodyPosition.Position = newPos
+-- Activate Tornado
+TornadoSection:NewToggle("Tornado On/Off", "Toggle the tornado", function(state)
+    tornadoActive = state
+end)
+
+-- Tornado Loop
+task.spawn(function()
+    while task.wait() do
+        if tornadoActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            for _, part in pairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") and not part.Anchored and not part:IsDescendantOf(LocalPlayer.Character) then
+                    local offset = Vector3.new(math.cos(tick() * tornadoSpeed), 0, math.sin(tick() * tornadoSpeed)) * tornadoWidth
+                    if tornadoPattern == "Tight" then
+                        offset = offset * 0.5
+                    elseif tornadoPattern == "Wide" then
+                        offset = offset * 1.5
+                    elseif tornadoPattern == "Chaos" then
+                        offset = Vector3.new(math.random(-tornadoWidth, tornadoWidth), 0, math.random(-tornadoWidth, tornadoWidth))
+                    end
+                    local goalPos = LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, tornadoHeight, 0) + offset
+                    local bp = part:FindFirstChild("BodyPosition") or Instance.new("BodyPosition", part)
+                    bp.MaxForce = Vector3.new(9e9,9e9,9e9)
+                    bp.Position = goalPos
                 end
             end
         end
     end
-end)
-
--- Functions
-local function StartTornado()
-    frozenParts = {}
-    for _, part in pairs(workspace:GetDescendants()) do
-        if part:IsA("BasePart") and not part.Anchored and not part:IsDescendantOf(player.Character) and not part:FindFirstAncestorWhichIsA("Model") then
-            local bodyPos = Instance.new("BodyPosition")
-            bodyPos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            bodyPos.Position = player.Character.Head.Position
-            bodyPos.Parent = part
-            table.insert(frozenParts, part)
-        end
-    end
-    Notify("hello faggot")
-end
-
-local function StopTornado()
-    for _, part in pairs(frozenParts) do
-        if part and part:FindFirstChild("BodyPosition") then
-            part.BodyPosition:Destroy()
-        end
-    end
-    frozenParts = {}
-    Notify("Tornado stopped 🛑")
-end
-
--- UI Tabs
-local TornadoTab = Window:NewTab("Tornado 🌪️")
-local TornadoSection = TornadoTab:NewSection("Control")
-
-TornadoSection:NewButton("Start Tornado", "Summon the tornado", function()
-    StartTornado()
-    tornadoEnabled = true
-end)
-
-TornadoSection:NewButton("Stop Tornado", "Stop the tornado", function()
-    tornadoEnabled = false
-    StopTornado()
-end)
-
-TornadoSection:NewDropdown("Spin Pattern", "Choose tornado pattern", {"Normal", "Reverse", "Spiral Up", "Spiral Down", "Chaos"}, function(option)
-    tornadoPattern = option
-    Notify("Pattern: " .. option)
-end)
-
-TornadoSection:NewSlider("Spin Speed", "Change tornado spin speed", 50, 1, function(value)
-    tornadoSpeed = value
-    Notify("Spin Speed: " .. value)
-end)
-
-TornadoSection:NewSlider("Width", "Change tornado width", 100, 5, function(value)
-    tornadoWidth = value
-    Notify("Width: " .. value)
-end)
-
-TornadoSection:NewSlider("Height", "Change tornado height", 100, 10, function(value)
-    tornadoHeight = value
-    Notify("Height: " .. value)
-end)
-
-local NDSTab = Window:NewTab("NDS Fun 🎉")
-local NDSSection = NDSTab:NewSection("More coming soon twin 🔥")
-
-NDSSection:NewButton("Pop Sound", "Plays the pop sound", function()
-    popSound:Play()
-    Notify("Pop sound played")
 end)
