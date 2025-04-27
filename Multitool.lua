@@ -1,99 +1,124 @@
 local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 local Window = KavoUI.CreateLib("Multitool | Made By Exploding Car", "DarkTheme")
 
-local Tab = Window:NewTab("Chat Bypass")
-local Section = Tab:NewSection("Chat Bypass Tools")
+local Tab = Window:NewTab("Tools")
+local Section = Tab:NewSection("Hinge Tools")
+
+--// Function to Make a Tool
+local function makeTool(name, onActivate)
+    local tool = Instance.new("Tool")
+    tool.Name = name
+    tool.RequiresHandle = false
+    tool.Activated:Connect(onActivate)
+    tool.Parent = game.Players.LocalPlayer.Backpack
+end
+
+--// Button 1: Break Hinges Tool
+Section:NewButton("Get Break Hinges Tool", "Destroys all hinges", function()
+    makeTool("Break Hinges", function()
+        for _, obj in pairs(game:GetDescendants()) do
+            if obj:IsA("HingeConstraint") then
+                obj:Destroy()
+            end
+        end
+    end)
+end)
+
+--// Button 2: Spin Hinges Tool
+Section:NewButton("Get Spin Hinges Tool", "Spins all hinges crazy fast", function()
+    makeTool("Spin Hinges", function()
+        for _, obj in pairs(game:GetDescendants()) do
+            if obj:IsA("HingeConstraint") then
+                obj.AngularVelocity = 10000
+                obj.MotorMaxTorque = math.huge
+            end
+        end
+    end)
+end)
+
+--// Button 3: Fling Hinges Tool
+Section:NewButton("Get Fling Hinges Tool", "Flings parts with hinges", function()
+    makeTool("Fling Hinges", function()
+        for _, obj in pairs(game:GetDescendants()) do
+            if obj:IsA("HingeConstraint") then
+                local att0 = obj.Attachment0
+                if att0 and att0.Parent and att0.Parent:IsA("BasePart") then
+                    att0.Parent.Velocity = Vector3.new(
+                        math.random(-500, 500),
+                        math.random(500, 1000),
+                        math.random(-500, 500)
+                    )
+                end
+            end
+        end
+    end)
+end)
+
+-- Chat Bypass Tab
+local ChatTab = Window:NewTab("Chat Bypass")
+local ChatSection = ChatTab:NewSection("Chat Bypass")
 
 -- Create the Chat Bypass GUI
-local ChatFrame = Instance.new("Frame")
-ChatFrame.Size = UDim2.new(0, 300, 0, 150)
-ChatFrame.Position = UDim2.new(0, 10, 0, 10)
-ChatFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-ChatFrame.BackgroundTransparency = 0.5
-ChatFrame.Visible = false
-ChatFrame.Parent = game.Players.LocalPlayer.PlayerGui:WaitForChild("ScreenGui")
+local chatGUI = Instance.new("ScreenGui")
+chatGUI.Parent = game.Players.LocalPlayer.PlayerGui
 
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(0, 300, 0, 25)
-TitleLabel.Position = UDim2.new(0, 0, 0, 0)
-TitleLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-TitleLabel.Text = "Chat Bypass"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.Parent = ChatFrame
+local chatFrame = Instance.new("Frame")
+chatFrame.Parent = chatGUI
+chatFrame.Size = UDim2.new(0, 300, 0, 150)
+chatFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+chatFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+chatFrame.BorderSizePixel = 2
+chatFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 
-local TextBox = Instance.new("TextBox")
-TextBox.Size = UDim2.new(0, 280, 0, 40)
-TextBox.Position = UDim2.new(0, 10, 0, 30)
-TextBox.PlaceholderText = "Enter your message..."
-TextBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextBox.ClearTextOnFocus = true
-TextBox.Parent = ChatFrame
+local inputBox = Instance.new("TextBox")
+inputBox.Parent = chatFrame
+inputBox.Size = UDim2.new(1, -20, 0, 40)
+inputBox.Position = UDim2.new(0, 10, 0, 10)
+inputBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+inputBox.BorderSizePixel = 1
+inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+inputBox.PlaceholderText = "Type your message here..."
+inputBox.ClearTextOnFocus = false
 
-local SendButton = Instance.new("TextButton")
-SendButton.Size = UDim2.new(0, 280, 0, 30)
-SendButton.Position = UDim2.new(0, 10, 0, 80)
-SendButton.Text = "Send Message"
-SendButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-SendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SendButton.Parent = ChatFrame
+local sendButton = Instance.new("TextButton")
+sendButton.Parent = chatFrame
+sendButton.Size = UDim2.new(0, 100, 0, 40)
+sendButton.Position = UDim2.new(0, 10, 1, -50)
+sendButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+sendButton.BorderSizePixel = 1
+sendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+sendButton.Text = "Send Message"
 
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 80, 0, 30)
-ToggleButton.Position = UDim2.new(0, 10, 0, 10)
-ToggleButton.Text = "Open"
-ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Parent = game.Players.LocalPlayer.PlayerGui:WaitForChild("ScreenGui")
-
--- Function to handle the open/close toggle of the Chat GUI
-ToggleButton.MouseButton1Click:Connect(function()
-    if ChatFrame.Visible then
-        ChatFrame.Visible = false
-        ToggleButton.Text = "Open"
-    else
-        ChatFrame.Visible = true
-        ToggleButton.Text = "Close"
-    end
-end)
-
--- Function to send the message with chat bypass
-SendButton.MouseButton1Click:Connect(function()
-    local message = TextBox.Text
-    if message and message ~= "" then
-        -- Convert message to bypass format
-        local bypassedMessage = ""
+-- Function to send message
+sendButton.MouseButton1Click:Connect(function()
+    local message = inputBox.Text
+    if message ~= "" then
+        -- Convert message to bypassed format (e.g., "s.ͥ.g.ͫ..ͣ.")
+        local convertedMessage = ""
         for i = 1, #message do
-            bypassedMessage = bypassedMessage .. string.char(string.byte(message:sub(i, i)) + math.random(-5, 5))
+            local char = message:sub(i, i)
+            convertedMessage = convertedMessage .. char .. string.char(math.random(32, 126)) -- Add random characters in between
         end
-
-        -- Send the bypassed message to chat (assuming we are using the Roblox chat system)
-        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(bypassedMessage, "All")
+        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(convertedMessage, "All")
     end
 end)
 
--- Optional: Make the GUI movable
-local dragging = false
-local dragInput, dragStart, startPos
+-- Create the Open/Close Button
+local openCloseButton = Instance.new("TextButton")
+openCloseButton.Parent = chatGUI
+openCloseButton.Size = UDim2.new(0, 100, 0, 30)
+openCloseButton.Position = UDim2.new(0, 10, 0, 160)
+openCloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+openCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+openCloseButton.Text = "Open/Close"
+openCloseButton.TextSize = 14
 
-ChatFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = ChatFrame.Position
-    end
+-- Function to toggle the chat bypass GUI visibility
+local isOpen = false
+openCloseButton.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    chatFrame.Visible = isOpen
 end)
 
-ChatFrame.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        ChatFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-ChatFrame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
+-- The default state is closed
+chatFrame.Visible = false
