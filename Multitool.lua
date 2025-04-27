@@ -1,232 +1,90 @@
---// Load Kavo UI
-local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = KavoUI.CreateLib("Multitool | Made by Exploding Car", "DarkTheme")
 
---// Tabs
-local toolsTab = Window:NewTab("Tools")
-local randomTab = Window:NewTab("Random")
-local chatBypassTab = Window:NewTab("Chat Bypass")
+-- // Services
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local UIS = game:GetService("UserInputService")
 
---// Sections
-local hingeSection = toolsTab:NewSection("Hinge Tools")
-local randomSection = randomTab:NewSection("Funny Animations")
-local chatSection = chatBypassTab:NewSection("Chat Tools")
+local localPlayer = Players.LocalPlayer
 
-------------------------
--- Hinge Tools
-------------------------
+-- // Create Chat Bypass GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ChatBypassUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = localPlayer:WaitForChild("PlayerGui")
 
-local function makeTool(name, onActivate)
-    local tool = Instance.new("Tool")
-    tool.Name = name
-    tool.RequiresHandle = false
-    tool.Activated:Connect(onActivate)
-    tool.Parent = game.Players.LocalPlayer.Backpack
-end
+local Frame = Instance.new("Frame")
+Frame.Name = "MainFrame"
+Frame.Size = UDim2.new(0, 300, 0, 150)
+Frame.Position = UDim2.new(0.5, -150, 0.4, -75)
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+Frame.Visible = false
+Frame.Parent = ScreenGui
 
-hingeSection:NewButton("Get Break Hinges Tool", "Destroys all hinges", function()
-    makeTool("Break Hinges", function()
-        for _, obj in pairs(game:GetDescendants()) do
-            if obj:IsA("HingeConstraint") then
-                obj:Destroy()
-            end
-        end
-    end)
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Title.Text = "Made by Exploding Car"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.Parent = Frame
+
+local TextBox = Instance.new("TextBox")
+TextBox.Size = UDim2.new(1, -20, 0, 50)
+TextBox.Position = UDim2.new(0, 10, 0, 40)
+TextBox.PlaceholderText = "Type Message Here..."
+TextBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+TextBox.TextColor3 = Color3.new(1,1,1)
+TextBox.Font = Enum.Font.Gotham
+TextBox.TextSize = 14
+TextBox.ClearTextOnFocus = false
+TextBox.Parent = Frame
+
+local SendButton = Instance.new("TextButton")
+SendButton.Size = UDim2.new(0, 100, 0, 40)
+SendButton.Position = UDim2.new(0.5, -50, 1, -50)
+SendButton.Text = "Send Message"
+SendButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+SendButton.TextColor3 = Color3.new(1,1,1)
+SendButton.Font = Enum.Font.GothamBold
+SendButton.TextSize = 14
+SendButton.Parent = Frame
+
+-- // Bypass Message Sender
+local meta = getrawmetatable(game)
+setreadonly(meta, false)
+local old = meta.__namecall
+meta.__namecall = newcclosure(function(self, ...)
+	local args = {...}
+	if tostring(getnamecallmethod()) == "FireServer" and self.Name == "SayMessageRequest" then
+		local msg = args[1]
+		msg = msg:gsub(".", function(c)
+			if c:match("%a") then
+				return c .. "ۘॱ"
+			end
+			return c
+		end)
+		return old(self, msg, args[2])
+	end
+	return old(self, ...)
+end)
+setreadonly(meta, true)
+
+-- // Send Message
+SendButton.MouseButton1Click:Connect(function()
+	local msg = TextBox.Text
+	if msg ~= "" then
+		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+	end
 end)
 
-hingeSection:NewButton("Get Spin Hinges Tool", "Spins all hinges crazy fast", function()
-    makeTool("Spin Hinges", function()
-        for _, obj in pairs(game:GetDescendants()) do
-            if obj:IsA("HingeConstraint") then
-                obj.AngularVelocity = 10000
-                obj.MotorMaxTorque = math.huge
-            end
-        end
-    end)
+-- // Toggle GUI with Key ("K")
+UIS.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.K then
+		Frame.Visible = not Frame.Visible
+	end
 end)
-
-hingeSection:NewButton("Get Fling Hinges Tool", "Flings parts with hinges", function()
-    makeTool("Fling Hinges", function()
-        for _, obj in pairs(game:GetDescendants()) do
-            if obj:IsA("HingeConstraint") then
-                local att0 = obj.Attachment0
-                if att0 and att0.Parent and att0.Parent:IsA("BasePart") then
-                    att0.Parent.Velocity = Vector3.new(
-                        math.random(-500, 500),
-                        math.random(500, 1000),
-                        math.random(-500, 500)
-                    )
-                end
-            end
-        end
-    end)
-end)
-
-------------------------
--- Invis Tool
-------------------------
-
-randomSection:NewButton("Get Invis Tool", "Toggle invisibility + ghost clone", function()
-    -- Invis Tool Script
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-
-    local tool = Instance.new("Tool")
-    tool.Name = "Invis Tool by Exploding Car"
-    tool.RequiresHandle = false
-
-    local isInvisible = false
-    local ghostModel = nil
-
-    local function createGhost(character)
-        local ghost = Instance.new("Model")
-        ghost.Name = "GhostClone"
-
-        for _, part in ipairs(character:GetDescendants()) do
-            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                local clone = part:Clone()
-                clone.Anchored = false
-                clone.CanCollide = false
-                clone.Transparency = 0.5
-                clone.Parent = ghost
-            end
-        end
-
-        local root = character:FindFirstChild("HumanoidRootPart")
-        if root then
-            local ghostRoot = root:Clone()
-            ghostRoot.Anchored = false
-            ghostRoot.CanCollide = false
-            ghostRoot.Transparency = 1
-            ghostRoot.Parent = ghost
-        end
-
-        ghost.Parent = workspace
-
-        -- Weld Ghost Parts to Player Parts
-        for _, ghostPart in ipairs(ghost:GetChildren()) do
-            if ghostPart:IsA("BasePart") then
-                local playerPart = character:FindFirstChild(ghostPart.Name)
-                if playerPart then
-                    local weld = Instance.new("WeldConstraint")
-                    weld.Part0 = ghostPart
-                    weld.Part1 = playerPart
-                    weld.Parent = ghostPart
-                end
-            end
-        end
-
-        return ghost
-    end
-
-    local function invisibility(on)
-        if on then
-            for _, part in ipairs(Character:GetDescendants()) do
-                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                    part.Transparency = 1
-                elseif part:IsA("Decal") then
-                    part.Transparency = 1
-                end
-            end
-            ghostModel = createGhost(Character)
-        else
-            for _, part in ipairs(Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.Transparency = 0
-                elseif part:IsA("Decal") then
-                    part.Transparency = 0
-                end
-            end
-            if ghostModel then
-                ghostModel:Destroy()
-                ghostModel = nil
-            end
-        end
-    end
-
-    tool.Activated:Connect(function()
-        isInvisible = not isInvisible
-        invisibility(isInvisible)
-    end)
-
-    tool.Parent = LocalPlayer.Backpack
-end)
-
-------------------------
--- Funny Animations (SERVER SIDE VIA RIG EDIT)
-------------------------
-
-randomSection:NewButton("Flop Mode", "Fall and flop around", function()
-    local char = game.Players.LocalPlayer.Character
-    if char and char:FindFirstChildOfClass("Humanoid") then
-        for _, part in ipairs(char:GetChildren()) do
-            if part:IsA("Motor6D") then
-                part:Destroy()
-            end
-        end
-    end
-end)
-
-randomSection:NewButton("Float Dance", "Spin and float upward", function()
-    local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        game:GetService("RunService").Heartbeat:Connect(function()
-            hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(10), 0) + Vector3.new(0, 0.05, 0)
-        end)
-    end
-end)
-
-randomSection:NewButton("Backflip Spam", "Spam flopping", function()
-    local hum = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if hum then
-        while task.wait(0.1) do
-            hum:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end
-end)
-
-randomSection:NewButton("Cartwheel Glitch", "Washing machine", function()
-    local char = game.Players.LocalPlayer.Character
-    if char then
-        for _, part in ipairs(char:GetDescendants()) do
-            if part:IsA("Motor6D") then
-                part.C0 = part.C0 * CFrame.Angles(math.random(), math.random(), math.random())
-            end
-        end
-    end
-end)
-
-------------------------
--- Chat Bypass
-------------------------
-
-chatSection:NewButton("Enable Chat Bypass", "Bypass chat filters", function()
-    local meta = getrawmetatable(game)
-    if (make_writeable ~= nil) then
-        make_writeable(meta)
-    elseif (setreadonly ~= nil) then
-        setreadonly(meta, false)
-    end
-
-    local old = meta.__namecall
-    meta.__namecall = newcclosure(function(self, ...)
-        local args = {...}
-        if tostring(getnamecallmethod()) == "FireServer" and self.Name == "SayMessageRequest" then
-            local msg = args[1]
-            msg = msg:gsub(".", "%1ۘॱ") -- every letter gets bypassed
-            return old(self, msg, args[2])
-        end
-        return old(self, ...)
-    end)
-
-    if (setreadonly ~= nil) then
-        setreadonly(meta, true)
-    elseif (make_readonly ~= nil) then
-        make_readonly(meta)
-    end
-end)
-
-------------------------
--- END
-------------------------
