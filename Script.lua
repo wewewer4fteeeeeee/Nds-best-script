@@ -1,201 +1,173 @@
---// Natural Disaster Survival Script Made By Exploding Car
+--// Light Obfuscation Start
+local a=game:GetService("TweenService")
+local b=game:GetService("Players")
+local c=b.LocalPlayer
+local d=c:WaitForChild("PlayerGui")
+local e=Instance.new("ScreenGui",d)
+e.IgnoreGuiInset=true
+e.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+local f=Instance.new("Frame",e)
+f.Size=UDim2.new(1,0,1,0)
+f.BackgroundColor3=Color3.fromRGB(30,30,30)
+local g=Instance.new("TextLabel",f)
+g.Size=UDim2.new(1,0,1,0)
+g.BackgroundTransparency=1
+g.Text="Natural Disaster Survival Script\nMade by ExplodingCar"
+g.Font=Enum.Font.GothamBold
+g.TextSize=40
+g.TextColor3=Color3.fromRGB(255,255,255)
+g.TextStrokeTransparency=0
+task.wait(2)
+a:Create(f,TweenInfo.new(1),{BackgroundTransparency=1}):Play()
+a:Create(g,TweenInfo.new(1),{TextTransparency=1}):Play()
+task.wait(1)
+e:Destroy()
 
--- Rayfield UI
-loadstring(game:HttpGet("https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua"))()
+--// Rayfield Load
+local h=loadstring(game:HttpGet("https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua"))()
+local i=h:CreateWindow({
+    Name="NDS | By ExplodingCar",
+    LoadingTitle="Natural Disaster Script",
+    LoadingSubtitle="Made by ExplodingCar",
+    ConfigurationSaving={Enabled=true,FolderName="NDS_Save"},
+    Discord={Enabled=false}
+})
 
-local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua"))()
+--// Tabs
+local j=i:CreateTab("🌪️ Tornado Control")
+local k=i:CreateTab("🔧 Other NDS Stuff")
 
-local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
-local tornadoActive = false
-local spinSpeed = 5
-local tornadoWidth = 10
-local tornadoHeight = 40
-local pattern = "Normal"
+--// Settings
+local tornadoEnabled=false
+local spinSpeed=10
+local spinHeight=40
+local spinWidth=10
+local l={}
+local m=Instance.new("Sound",d)
+m.SoundId="rbxassetid://9118826814"
+m.Volume=1
 
-local frozenParts = {}
-
-function Notify(title, content, duration)
-	game.StarterGui:SetCore("SendNotification", {
-		Title = title,
-		Text = content,
-		Duration = duration or 5
-	})
+--// Tornado Functions
+function ToggleTornado(state)
+    tornadoEnabled=state
+    if state then
+        m:Play()
+        Rayfield:Notify({Title="Tornado Enabled",Content="Swirling madness activated!",Duration=3})
+    else
+        m:Play()
+        Rayfield:Notify({Title="Tornado Disabled",Content="Swirl effect stopped.",Duration=3})
+    end
 end
 
-function CreateTornado()
-	while tornadoActive do
-		for _, part in pairs(workspace:GetDescendants()) do
-			if part:IsA("BasePart") and not part.Anchored and not part:IsDescendantOf(player.Character) then
-				if not table.find(frozenParts, part) then
-					local bodyPosition = Instance.new("BodyPosition", part)
-					bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-					table.insert(frozenParts, part)
-				end
-			end
-		end
-
-		local tickTime = tick()
-		for _, part in pairs(frozenParts) do
-			if part and part.Parent then
-				local angle = (tickTime * spinSpeed) + (part.Position.X + part.Position.Z) / 5
-				local radius = tornadoWidth
-				local heightOffset = math.sin(tickTime + (part.Position.X / 10)) * 5
-				local x = math.cos(angle) * radius
-				local z = math.sin(angle) * radius
-				local y = tornadoHeight + heightOffset
-
-				if part:FindFirstChildOfClass("BodyPosition") then
-					part.BodyPosition.Position = player.Character.Head.Position + Vector3.new(x, y, z)
-				end
-			end
-		end
-		task.wait(0.03)
-	end
+function UpdateTornado()
+    while tornadoEnabled do
+        for _,part in ipairs(workspace:GetDescendants()) do
+            if part:IsA("BasePart") and not part.Anchored and not part:IsDescendantOf(c.Character) then
+                if not table.find(l,part) then
+                    table.insert(l,part)
+                    local bp=Instance.new("BodyPosition",part)
+                    bp.MaxForce=Vector3.new(math.huge,math.huge,math.huge)
+                    local bg=Instance.new("BodyGyro",part)
+                    bg.MaxTorque=Vector3.new(math.huge,math.huge,math.huge)
+                end
+            end
+        end
+        local t=0
+        while tornadoEnabled and task.wait() do
+            t+=0.05
+            for _,part in ipairs(l) do
+                if part and part.Parent then
+                    local bp=part:FindFirstChildOfClass("BodyPosition")
+                    local bg=part:FindFirstChildOfClass("BodyGyro")
+                    if bp and bg then
+                        local x=math.cos(t*spinSpeed)*spinWidth
+                        local z=math.sin(t*spinSpeed)*spinWidth
+                        local y=spinHeight
+                        local pos=(c.Character.Head.Position+Vector3.new(x,y,z))
+                        bp.Position=pos
+                        bg.CFrame=CFrame.new(pos,c.Character.Head.Position)
+                    end
+                end
+            end
+        end
+        task.wait(0.1)
+    end
 end
 
-function StopTornado()
-	for _, part in pairs(frozenParts) do
-		if part and part:FindFirstChildOfClass("BodyPosition") then
-			part.BodyPosition:Destroy()
-		end
-	end
-	table.clear(frozenParts)
-end
-
-function FlingUnanchored()
-	for _, part in pairs(workspace:GetDescendants()) do
-		if part:IsA("BasePart") and not part.Anchored and not part:IsDescendantOf(player.Character) then
-			local bv = Instance.new("BodyVelocity", part)
-			bv.Velocity = Vector3.new(math.random(-5000,5000), math.random(1000,5000), math.random(-5000,5000))
-			bv.MaxForce = Vector3.new(1e9,1e9,1e9)
-			game.Debris:AddItem(bv, 0.5)
-		end
-	end
-end
-
-function StartBalloonAnim()
-	local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
-	if humanoid then
-		local anim = humanoid.RigType == Enum.HumanoidRigType.R15 and ReplicatedStorage:WaitForChild("BalloonFloatAnimationR15") or ReplicatedStorage:WaitForChild("BalloonFloatAnimationR6")
-		humanoid:LoadAnimation(anim):Play()
-	end
-end
-
-function StartAppleAnim()
-	local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
-	if humanoid then
-		local anim = humanoid.RigType == Enum.HumanoidRigType.R15 and ReplicatedStorage:WaitForChild("AppleEatAnimR15") or ReplicatedStorage:WaitForChild("AppleEatAnimR6")
-		humanoid:LoadAnimation(anim):Play()
-	end
-end
-
-function StealBalloon()
-	local targetPlayer = game.Players:FindFirstChild("TargetPlayerName")
-	if targetPlayer and targetPlayer.Backpack:FindFirstChild("GreenBalloon") then
-		local clone = targetPlayer.Backpack.GreenBalloon:Clone()
-		clone.Parent = player.Backpack
-		Notify("Balloon Stolen!", "You stole a balloon!", 5)
-	else
-		Notify("Error", "Target player doesn't have a balloon!", 5)
-	end
-end
-
--- GUI Setup
-local Window = Rayfield:CreateWindow({
-	Name = "NDS Script | Made By Exploding Car",
-	LoadingTitle = "Natural Disaster Survival Script",
-	LoadingSubtitle = "Made by Exploding Car 🚗💥",
-	ConfigurationSaving = {
-		Enabled = true,
-		FolderName = "NDSSaveData",
-		FileName = "ExplodingCarNDS"
-	},
-	KeySystem = false,
+--// UI Controls
+j:CreateToggle({
+    Name="Enable Tornado",
+    CurrentValue=false,
+    Callback=function(Value)
+        ToggleTornado(Value)
+        if Value then
+            task.spawn(UpdateTornado)
+        end
+    end
 })
 
-local TornadoTab = Window:CreateTab("🌪️ Tornado Control", nil)
-
-local NdsTab = Window:CreateTab("🛠️ NDS Fun Stuff", nil)
-
--- Tornado Controls
-TornadoTab:CreateToggle({
-	Name = "Enable Tornado",
-	CurrentValue = false,
-	Callback = function(Value)
-		tornadoActive = Value
-		if tornadoActive then
-			Notify("Tornado Active!", "Tornado Started!", 5)
-			task.spawn(CreateTornado)
-		else
-			StopTornado()
-			Notify("Tornado Stopped", "Tornado has been disabled.", 5)
-		end
-	end,
+j:CreateSlider({
+    Name="Spin Speed",
+    Range={1,50},
+    Increment=1,
+    CurrentValue=10,
+    Callback=function(Value)
+        spinSpeed=Value
+    end
 })
 
-TornadoTab:CreateSlider({
-	Name = "Spin Speed",
-	Range = {1, 20},
-	Increment = 1,
-	Suffix = "Speed",
-	CurrentValue = 5,
-	Callback = function(Value)
-		spinSpeed = Value
-	end,
+j:CreateSlider({
+    Name="Spin Width",
+    Range={5,50},
+    Increment=1,
+    CurrentValue=10,
+    Callback=function(Value)
+        spinWidth=Value
+    end
 })
 
-TornadoTab:CreateSlider({
-	Name = "Tornado Width",
-	Range = {5, 50},
-	Increment = 1,
-	Suffix = "Studs",
-	CurrentValue = 10,
-	Callback = function(Value)
-		tornadoWidth = Value
-	end,
+j:CreateSlider({
+    Name="Spin Height",
+    Range={10,100},
+    Increment=1,
+    CurrentValue=40,
+    Callback=function(Value)
+        spinHeight=Value
+    end
 })
 
-TornadoTab:CreateSlider({
-	Name = "Tornado Height",
-	Range = {10, 100},
-	Increment = 1,
-	Suffix = "Studs",
-	CurrentValue = 40,
-	Callback = function(Value)
-		tornadoHeight = Value
-	end,
+--// NDS Buttons
+k:CreateButton({
+    Name="Fling Unanchored Parts",
+    Callback=function()
+        for _,part in ipairs(workspace:GetDescendants()) do
+            if part:IsA("BasePart") and not part.Anchored then
+                local bv=Instance.new("BodyVelocity",part)
+                bv.MaxForce=Vector3.new(1e6,1e6,1e6)
+                bv.Velocity=Vector3.new(math.random(-5000,5000),math.random(1000,5000),math.random(-5000,5000))
+                game.Debris:AddItem(bv,0.5)
+            end
+        end
+        m:Play()
+        Rayfield:Notify({Title="Flinged!",Content="All unanchored parts have been YEETED!",Duration=3})
+    end
 })
 
--- NDS Stuff
-NdsTab:CreateButton({
-	Name = "Fling Unanchored Parts",
-	Callback = function()
-		FlingUnanchored()
-		Notify("Fling Activated", "All unanchored parts flung!", 5)
-	end,
+k:CreateButton({
+    Name="Steal Balloon",
+    Callback=function()
+        local balloonOwner=b:FindFirstChild("TargetPlayerName") -- Manual change needed
+        if balloonOwner and balloonOwner:FindFirstChild("Backpack") then
+            local balloon=balloonOwner.Backpack:FindFirstChild("GreenBalloon")
+            if balloon then
+                local balloonClone=balloon:Clone()
+                balloonClone.Parent=c.Backpack
+                m:Play()
+                Rayfield:Notify({Title="Balloon Stolen",Content="Green balloon stolen successfully!",Duration=3})
+            else
+                Rayfield:Notify({Title="No Balloon",Content="Target doesn't have a balloon.",Duration=3})
+            end
+        end
+    end
 })
-
-NdsTab:CreateButton({
-	Name = "Start Balloon Animation",
-	Callback = function()
-		StartBalloonAnim()
-		Notify("Balloon Float", "Balloon animation started.", 5)
-	end,
-})
-
-NdsTab:CreateButton({
-	Name = "Start Apple Eating Animation",
-	Callback = function()
-		StartAppleAnim()
-		Notify("Apple Eating", "Apple eating animation started.", 5)
-	end,
-})
-
-NdsTab:CreateButton({
-	Name = "Steal Balloon",
-	Callback = function()
-		StealBalloon()
-	end,
-})
-
+--// Light Obfuscation End
