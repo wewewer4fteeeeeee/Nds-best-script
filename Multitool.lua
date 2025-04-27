@@ -5,36 +5,40 @@ local Window = KavoUI.CreateLib("Multitool | Made By Exploding Car", "DarkTheme"
 local Tab = Window:NewTab("Random")
 local Section = Tab:NewSection("Goofy Stuff")
 
--- Enter Player's Name and Play Animation + Give Tool
+-- Enter Player's Name and Play Animation + Move Player
 Section:NewTextBox("Enter Player's Name", "Type the player's name to give them the 'ykyk hawk tuah' and play animation", function(playerName)
     local player = game.Players:FindFirstChild(playerName)
     
     if player and player.Character and player.Character:FindFirstChild("Humanoid") then
         local humanoid = player.Character.Humanoid
         local character = player.Character
-
-        -- Play animation on the player (looping the start of the animation)
-        local anim = Instance.new("Animation")
-        anim.AnimationId = "rbxassetid://18858673531"
-        local animTrack = humanoid:LoadAnimation(anim)
-        animTrack:Play()
-        animTrack:AdjustSpeed(1) -- Adjust the speed if necessary
-
-        -- Give the player the "ykyk hawk tuah" (tool)
-        local tool = Instance.new("Tool")
-        tool.Name = "ykyk hawk tuah"
-        tool.Parent = player.Backpack
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
         
-        -- Optionally, position the tool near the character's position in a humorous way
-        local handle = Instance.new("Part")
-        handle.Size = Vector3.new(1, 1, 1)
-        handle.Position = character.HumanoidRootPart.Position + Vector3.new(0, 5, 0) -- Above the player
-        handle.Anchored = true
-        handle.Parent = game.Workspace
-        
-        -- After a short delay, position the tool at a comical place
-        wait(0.5)
-        handle.Position = character.HumanoidRootPart.Position + Vector3.new(0, -1, 0) -- Modify for humor
+        if humanoidRootPart then
+            -- Teleport to the player (around their HumanoidRootPart)
+            local targetPosition = humanoidRootPart.Position + Vector3.new(0, 5, 0)
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+            
+            -- Play and loop the animation
+            local anim = Instance.new("Animation")
+            anim.AnimationId = "rbxassetid://18135776429"
+            local animTrack = humanoid:LoadAnimation(anim)
+            animTrack:Play()
+            animTrack.Looped = true
+
+            -- Move the player forward and backward by 0.30 studs
+            while animTrack.IsPlaying do
+                -- Move the player forward by 0.30 studs
+                humanoidRootPart.CFrame = humanoidRootPart.CFrame + humanoidRootPart.CFrame.LookVector * 0.30
+                wait(0.5)  -- Wait for a short moment before moving backward
+                
+                -- Move the player backward by 0.30 studs
+                humanoidRootPart.CFrame = humanoidRootPart.CFrame - humanoidRootPart.CFrame.LookVector * 0.30
+                wait(0.5)  -- Wait for a short moment before moving forward again
+            end
+        else
+            print("HumanoidRootPart not found in the player's character.")
+        end
     else
         print("Player not found or invalid character.")
     end
@@ -94,34 +98,5 @@ game:GetService("UserInputService").InputBegan:Connect(function(input)
         chatBypassOpen = not chatBypassOpen
         chatFrame.Visible = chatBypassOpen
         openCloseButton.Text = chatBypassOpen and "Close Chat Bypass" or "Open Chat Bypass"
-    end
-end)
-
--- Admin-related Random Tab Section
-local RandomTab = Window:NewTab("Random")
-local RandomSection = RandomTab:NewSection("Goofy Stuff")
-
--- Button to loop animation on a target player
-RandomSection:NewButton("Goofy Animation", "Plays a funny animation on the target player", function()
-    local playerName = "TargetPlayerNameHere"  -- You can modify this with an actual player name or another method to get player input
-    local player = game.Players:FindFirstChild(playerName)
-    
-    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-        local humanoid = player.Character.Humanoid
-        local character = player.Character
-        
-        local anim = Instance.new("Animation")
-        anim.AnimationId = "rbxassetid://18858673531"
-        local animTrack = humanoid:LoadAnimation(anim)
-        animTrack:Play()
-        animTrack.Looped = true
-        
-        -- Place the tool or effect in the target location (like a funny position)
-        local tool = Instance.new("Tool")
-        tool.Name = "ykyk hawk tuah"
-        tool.Parent = player.Backpack
-        -- Add extra funny positioning or effects as needed
-    else
-        print("Player not found or invalid character.")
     end
 end)
