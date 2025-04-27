@@ -103,11 +103,11 @@ sendButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Create the Open/Close Button
+-- Create the Open/Close Button for Chat Bypass
 local openCloseButton = Instance.new("TextButton")
 openCloseButton.Parent = chatGUI
 openCloseButton.Size = UDim2.new(0, 100, 0, 30)
-openCloseButton.Position = UDim2.new(0, 10, 0, 160)
+openCloseButton.Position = UDim2.new(0, 10, 0, 50)  -- Move the button lower to avoid chatbox overlap
 openCloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 openCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 openCloseButton.Text = "Open/Close"
@@ -120,5 +120,10 @@ openCloseButton.MouseButton1Click:Connect(function()
     chatFrame.Visible = isOpen
 end)
 
--- The default state is closed
+-- Initially hide the chat bypass GUI (it will only show when the button is clicked)
 chatFrame.Visible = false
+
+-- Open/Close the Chat Bypass GUI when the Chat Bypass tab button is clicked
+ChatSection:NewButton("Activate Chat Bypass", "Open the chat bypass GUI", function()
+    chatFrame.Visible = true
+end)
