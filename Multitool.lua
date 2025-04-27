@@ -1,122 +1,99 @@
 local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 local Window = KavoUI.CreateLib("Multitool | Made By Exploding Car", "DarkTheme")
 
-local Tab = Window:NewTab("Tools")
-local Section = Tab:NewSection("Hinge Tools")
-local Section2 = Tab:NewSection("Steal Everything")
-local Section3 = Tab:NewSection("Chat Bypass")
+local Tab = Window:NewTab("Chat Bypass")
+local Section = Tab:NewSection("Chat Bypass Tools")
 
--- Function to make a tool
-local function makeTool(name, onActivate)
-    local tool = Instance.new("Tool")
-    tool.Name = name
-    tool.RequiresHandle = false
-    tool.Activated:Connect(onActivate)
-    tool.Parent = game.Players.LocalPlayer.Backpack
-end
+-- Create the Chat Bypass GUI
+local ChatFrame = Instance.new("Frame")
+ChatFrame.Size = UDim2.new(0, 300, 0, 150)
+ChatFrame.Position = UDim2.new(0, 10, 0, 10)
+ChatFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ChatFrame.BackgroundTransparency = 0.5
+ChatFrame.Visible = false
+ChatFrame.Parent = game.Players.LocalPlayer.PlayerGui:WaitForChild("ScreenGui")
 
--- Hinge Tools
-Section:NewButton("Get Break Hinges Tool", "Destroys all hinges", function()
-    makeTool("Break Hinges", function()
-        for _, obj in pairs(game:GetDescendants()) do
-            if obj:IsA("HingeConstraint") then
-                obj:Destroy()
-            end
-        end
-    end)
-end)
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(0, 300, 0, 25)
+TitleLabel.Position = UDim2.new(0, 0, 0, 0)
+TitleLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+TitleLabel.Text = "Chat Bypass"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Parent = ChatFrame
 
-Section:NewButton("Get Spin Hinges Tool", "Spins all hinges crazy fast", function()
-    makeTool("Spin Hinges", function()
-        for _, obj in pairs(game:GetDescendants()) do
-            if obj:IsA("HingeConstraint") then
-                obj.AngularVelocity = 10000
-                obj.MotorMaxTorque = math.huge
-            end
-        end
-    end)
-end)
+local TextBox = Instance.new("TextBox")
+TextBox.Size = UDim2.new(0, 280, 0, 40)
+TextBox.Position = UDim2.new(0, 10, 0, 30)
+TextBox.PlaceholderText = "Enter your message..."
+TextBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.ClearTextOnFocus = true
+TextBox.Parent = ChatFrame
 
-Section:NewButton("Get Fling Hinges Tool", "Flings parts with hinges", function()
-    makeTool("Fling Hinges", function()
-        for _, obj in pairs(game:GetDescendants()) do
-            if obj:IsA("HingeConstraint") then
-                local att0 = obj.Attachment0
-                if att0 and att0.Parent and att0.Parent:IsA("BasePart") then
-                    att0.Parent.Velocity = Vector3.new(
-                        math.random(-500, 500),
-                        math.random(500, 1000),
-                        math.random(-500, 500)
-                    )
-                end
-            end
-        end
-    end)
-end)
+local SendButton = Instance.new("TextButton")
+SendButton.Size = UDim2.new(0, 280, 0, 30)
+SendButton.Position = UDim2.new(0, 10, 0, 80)
+SendButton.Text = "Send Message"
+SendButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+SendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SendButton.Parent = ChatFrame
 
--- Steal Everything Tool
-Section2:NewButton("Steal Everything", "Steals all objects in the game (except backpacks)", function()
-    local player = game.Players.LocalPlayer
-    for _, obj in pairs(game.Workspace:GetDescendants()) do
-        -- Exclude parts from other players' backpacks
-        if obj.Parent ~= player.Backpack and obj.Parent ~= game.Players.LocalPlayer.Character then
-            local clonedObj = obj:Clone()
-            clonedObj.Parent = player.Character -- Adding to the player's character for now
-        end
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 80, 0, 30)
+ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.Text = "Open"
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Parent = game.Players.LocalPlayer.PlayerGui:WaitForChild("ScreenGui")
+
+-- Function to handle the open/close toggle of the Chat GUI
+ToggleButton.MouseButton1Click:Connect(function()
+    if ChatFrame.Visible then
+        ChatFrame.Visible = false
+        ToggleButton.Text = "Open"
+    else
+        ChatFrame.Visible = true
+        ToggleButton.Text = "Close"
     end
 end)
 
--- Chat Bypass
-Section3:NewButton("Open Chat Bypass", "Opens a textbox for chat bypass", function()
-    -- Create the ScreenGui
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Parent = game.Players.LocalPlayer.PlayerGui
-
-    -- Create the Frame for the textbox and button
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 300, 0, 150)
-    frame.Position = UDim2.new(0.5, -150, 0.5, -75)
-    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    frame.Parent = screenGui
-
-    -- Create the TextBox for input
-    local textBox = Instance.new("TextBox")
-    textBox.Size = UDim2.new(0, 250, 0, 50)
-    textBox.Position = UDim2.new(0.5, -125, 0, 20)
-    textBox.Text = ""
-    textBox.PlaceholderText = "Enter your message"
-    textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    textBox.BorderSizePixel = 0
-    textBox.Parent = frame
-
-    -- Create the "Send Message" button
-    local sendButton = Instance.new("TextButton")
-    sendButton.Size = UDim2.new(0, 250, 0, 30)
-    sendButton.Position = UDim2.new(0.5, -125, 0, 80)
-    sendButton.Text = "Send Message"
-    sendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    sendButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-    sendButton.BorderSizePixel = 0
-    sendButton.Parent = frame
-
-    -- Function to bypass chat and send the message in the encoded format
-    local function bypassChat(message)
-        local encodedMessage = ""
+-- Function to send the message with chat bypass
+SendButton.MouseButton1Click:Connect(function()
+    local message = TextBox.Text
+    if message and message ~= "" then
+        -- Convert message to bypass format
+        local bypassedMessage = ""
         for i = 1, #message do
-            local char = message:sub(i, i)
-            encodedMessage = encodedMessage .. char .. "." .. string.char(math.random(0, 255)) .. "."
+            bypassedMessage = bypassedMessage .. string.char(string.byte(message:sub(i, i)) + math.random(-5, 5))
         end
-        -- Send the encoded message in the chat
-        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(encodedMessage, "All")
-    end
 
-    -- When the "Send Message" button is clicked
-    sendButton.MouseButton1Click:Connect(function()
-        local message = textBox.Text
-        if message ~= "" then
-            bypassChat(message)
-            textBox.Text = "" -- Clear the textbox after sending
-        end
-    end)
+        -- Send the bypassed message to chat (assuming we are using the Roblox chat system)
+        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(bypassedMessage, "All")
+    end
 end)
+
+-- Optional: Make the GUI movable
+local dragging = false
+local dragInput, dragStart, startPos
+
+ChatFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = ChatFrame.Position
+    end
+end)
+
+ChatFrame.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        ChatFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+ChatFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
