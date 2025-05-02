@@ -1,6 +1,6 @@
 -- Load Kavo UI
 local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = KavoUI.CreateLib("Tool Dropper | Pickup & Dupe By exploding car u faggots", "BloodTheme")
+local Window = KavoUI.CreateLib("Tool Dropper | Pickup & Dupe", "BloodTheme")
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -75,4 +75,30 @@ end)
 -- 💻 Execute Remote Script Button
 Section:NewButton("j3rk 0ff r6", "Runs external R6-related script", function()
     loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))()
+end)
+
+-- 🧲 Steal All Tools from Game Hierarchy
+Section:NewButton("Steal All Items (Full Hierarchy)", "Searches whole game for Tools and clones them to your Backpack", function()
+    local function deepScanAndSteal(parent)
+        for _, item in ipairs(parent:GetChildren()) do
+            if item:IsA("Tool") then
+                local clone = item:Clone()
+                clone.Parent = Backpack
+            elseif #item:GetChildren() > 0 then
+                deepScanAndSteal(item)
+            end
+        end
+    end
+
+    local containers = {
+        workspace,
+        game:GetService("ReplicatedStorage"),
+        game:GetService("StarterPack"),
+        game:GetService("Lighting"),
+        game:GetService("Players")
+    }
+
+    for _, container in ipairs(containers) do
+        deepScanAndSteal(container)
+    end
 end)
